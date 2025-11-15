@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import ShoppingList from "./pages/ShoppingList";
 import UploadReceipt from "./pages/UploadReceipt";
 import MyPoints from "./pages/MyPoints";
+import CategoryProducts from "./pages/CategoryProducts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/shopping-list" element={<ShoppingList />} />
           <Route path="/upload-receipt" element={<UploadReceipt />} />
           <Route path="/my-points" element={<MyPoints />} />
+          <Route path="/category/:category" element={<CategoryProducts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

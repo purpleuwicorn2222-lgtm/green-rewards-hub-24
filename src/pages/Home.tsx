@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import SearchBar from "@/components/SearchBar";
@@ -7,14 +6,7 @@ import { Leaf, Recycle, Award } from "lucide-react";
 import heroImage from "@/assets/hero-nature.jpg";
 
 const Home = () => {
-  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/shopping-list?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,16 +34,23 @@ const Home = () => {
             </p>
             
             <div className="animate-fade-in flex justify-center mb-8">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onSearch={handleSearch}
-              />
+              <SearchBar />
             </div>
             
-            <Button variant="hero" size="lg" onClick={handleSearch}>
-              Start Shopping
-            </Button>
+            <div className="mt-8 flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
+              <p className="w-full text-sm text-muted-foreground mb-2">Browse by category:</p>
+              {["makeup", "skincare", "clothes", "tampons & pads", "furniture", "toilet paper", "jackets", "shoes", "toys", "straws"].map((term) => (
+                <Button
+                  key={term}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/category/${term}`)}
+                  className="text-xs hover:bg-nature/10 hover:border-nature"
+                >
+                  {term}
+                </Button>
+              ))}
+            </div>
           </div>
         </section>
 

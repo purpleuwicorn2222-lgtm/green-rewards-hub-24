@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import SearchBar from "@/components/SearchBar";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, ShoppingBag } from "lucide-react";
+import { Trash2, ShoppingBag, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Product {
@@ -83,11 +83,22 @@ const ShoppingList = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-6">Shopping List</h1>
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSearch={() => handleSearch()}
-          />
+          <div className="flex gap-2 w-full max-w-2xl">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search eco-friendly products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                className="pl-10 h-12 text-base border-2 focus-visible:ring-primary"
+              />
+            </div>
+            <Button onClick={() => handleSearch()} variant="eco" size="lg">
+              Search
+            </Button>
+          </div>
         </div>
 
         {/* Search Results */}
