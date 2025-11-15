@@ -14,19 +14,26 @@ import {
 } from "@/components/ui/dialog";
 import { Award, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import whoGivesACrapImg from "@/assets/brands/who-gives-a-crap.jpg";
+import thinxImg from "@/assets/brands/thinx.jpg";
+import patagoniaImg from "@/assets/brands/patagonia.jpg";
+import pelaImg from "@/assets/brands/pela.jpg";
+import greenToysImg from "@/assets/brands/green-toys.jpg";
 
 interface GiftCard {
   id: string;
   brand: string;
   image: string;
   pointsCost: number;
+  value: string;
 }
 
 const giftCards: GiftCard[] = [
-  { id: "1", brand: "Amazon", image: "https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=400", pointsCost: 200 },
-  { id: "2", brand: "Whole Foods", image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400", pointsCost: 200 },
-  { id: "3", brand: "Target", image: "https://images.unsplash.com/photo-1596558450268-9c27524ba856?w=400", pointsCost: 200 },
-  { id: "4", brand: "Starbucks", image: "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=400", pointsCost: 200 },
+  { id: "1", brand: "Who Gives a Crap", image: whoGivesACrapImg, pointsCost: 200, value: "$10" },
+  { id: "2", brand: "Thinx", image: thinxImg, pointsCost: 200, value: "$10" },
+  { id: "3", brand: "Patagonia", image: patagoniaImg, pointsCost: 200, value: "$10" },
+  { id: "4", brand: "Pela", image: pelaImg, pointsCost: 200, value: "$10" },
+  { id: "5", brand: "Green Toys", image: greenToysImg, pointsCost: 200, value: "$10" },
 ];
 
 const MyPoints = () => {
@@ -103,7 +110,7 @@ const MyPoints = () => {
               Redeem Points
             </h2>
             <p className="text-muted-foreground mb-6">
-              Choose from our selection of gift cards. Each card costs 200 points.
+              Choose from our selection of eco-friendly brand gift cards. Each $10 card costs 200 points.
             </p>
           </div>
 
@@ -121,7 +128,7 @@ const MyPoints = () => {
                 <CardHeader>
                   <CardTitle className="text-xl">{card.brand}</CardTitle>
                   <CardDescription className="text-primary font-bold text-lg">
-                    {card.pointsCost} Points
+                    {card.value} • {card.pointsCost} Points
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
