@@ -26,14 +26,50 @@ interface GiftCard {
   image: string;
   pointsCost: number;
   value: string;
+  description: string;
 }
 
 const giftCards: GiftCard[] = [
-  { id: "1", brand: "Who Gives a Crap", image: whoGivesACrapImg, pointsCost: 200, value: "$10" },
-  { id: "2", brand: "Thinx", image: thinxImg, pointsCost: 200, value: "$10" },
-  { id: "3", brand: "Patagonia", image: patagoniaImg, pointsCost: 200, value: "$10" },
-  { id: "4", brand: "Pela", image: pelaImg, pointsCost: 200, value: "$10" },
-  { id: "5", brand: "Green Toys", image: greenToysImg, pointsCost: 200, value: "$10" },
+  { 
+    id: "1", 
+    brand: "Who Gives a Crap", 
+    image: whoGivesACrapImg, 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Who Gives A Crap offers an environmentally friendly toilet paper that is \"good for your bum and great for the world\" as they say. Its products are 100% plastic free and have options made from 100% recycled paper or 100% bamboo. Additionally, 50% of the profits are donated to help build toilets for communities in need around the world."
+  },
+  { 
+    id: "2", 
+    brand: "Thinx", 
+    image: thinxImg, 
+    pointsCost: 200, 
+    value: "$10",
+    description: "An individual can go through approximately 11,000 disposable pads and/or tampons in a lifetime, and when you multiply that number by everyone with a period on this planet, that results in a substantial amount of waste. Thinx period-proof panties have the look and feel of regular underwear, but with its famous technology, the product can hold up to four tampons' worth of menstrual fluid."
+  },
+  { 
+    id: "3", 
+    brand: "Patagonia", 
+    image: patagoniaImg, 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Patagonia's corporate philosophy is all about going green. The business has built repair centers around the world to increase the longevity of its products and lower its carbon footprint. In 2016, the business pledged $10 million of its Black Friday sales to grassroots environmental groups dedicated to preserving and improving the planet."
+  },
+  { 
+    id: "4", 
+    brand: "Pela", 
+    image: pelaImg, 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Pela creates 100% compostable phone cases and accessories, making it easy to protect your phone while protecting the planet. Their products are made from plant-based materials and break down naturally in compost, reducing plastic waste in landfills and oceans."
+  },
+  { 
+    id: "5", 
+    brand: "Green Toys", 
+    image: greenToysImg, 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Part of raising a healthy baby is providing a healthy environment, and don't you think taking care of the natural environment is part of that too? Green Toys is an Eco Mama's dream: not only are the toys safely made for your baby, but they are made with 100% recycled materials."
+  },
 ];
 
 const MyPoints = () => {
@@ -115,10 +151,10 @@ const MyPoints = () => {
           </div>
 
           {/* Gift Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {giftCards.map((card) => (
-              <Card key={card.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="aspect-square overflow-hidden bg-muted">
+              <Card key={card.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                <div className="aspect-video overflow-hidden bg-muted">
                   <img
                     src={card.image}
                     alt={`${card.brand} gift card`}
@@ -131,11 +167,14 @@ const MyPoints = () => {
                     {card.value} • {card.pointsCost} Points
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col gap-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {card.description}
+                  </p>
                   <Button
                     onClick={() => handleRedeemClick(card)}
                     variant="eco"
-                    className="w-full"
+                    className="w-full mt-auto"
                     disabled={userPoints < card.pointsCost}
                   >
                     {userPoints >= card.pointsCost ? "Redeem" : "Not Enough Points"}
