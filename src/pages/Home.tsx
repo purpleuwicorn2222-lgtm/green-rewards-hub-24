@@ -110,50 +110,55 @@ const Home = () => {
               We're proud to partner with these sustainable brands committed to environmental responsibility
             </p>
             
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 md:gap-12 items-center justify-items-center">
               {/* Patagonia */}
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <img
                   src={patagoniaLogo}
                   alt="Patagonia"
                   className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 />
+                <p className="text-sm font-medium text-foreground">Patagonia</p>
               </div>
               
               {/* Pela */}
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <img
                   src={pelaLogo}
                   alt="Pela"
                   className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 />
+                <p className="text-sm font-medium text-foreground">Pela</p>
               </div>
               
               {/* Thinx */}
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <img
                   src={thinxLogo}
                   alt="Thinx"
                   className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 />
+                <p className="text-sm font-medium text-foreground">Thinx</p>
               </div>
               
               {/* Who Gives A Crap */}
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <img
                   src={whoGivesACrapLogo}
                   alt="Who Gives A Crap"
                   className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 />
+                <p className="text-sm font-medium text-foreground text-center">Who Gives A Crap</p>
               </div>
               
               {/* Green Toys */}
-              <div className="flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <img
                   src={greenToysLogo}
                   alt="Green Toys"
                   className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                 />
+                <p className="text-sm font-medium text-foreground">Green Toys</p>
               </div>
             </div>
           </div>

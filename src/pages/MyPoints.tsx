@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Award, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePoints } from "@/contexts/PointsContext";
 import whoGivesACrapImg from "@/assets/brands/who-gives-a-crap.jpg";
 import thinxImg from "@/assets/brands/thinx.jpg";
 import patagoniaImg from "@/assets/brands/patagonia.jpg";
@@ -73,7 +74,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "6", 
     brand: "Chipotle", 
-    image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/chipotle.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Chipotle is committed to Food With Integrity, sourcing responsibly raised meat, organic and local produce when possible, and dairy from pasture-raised cows. They focus on sustainable farming practices and reducing their environmental impact."
@@ -81,7 +82,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "7", 
     brand: "Panda Express", 
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/pandaexpress.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Panda Express is committed to serving quality food while being mindful of sustainability. They focus on responsible sourcing and reducing waste in their operations."
@@ -89,7 +90,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "8", 
     brand: "In-N-Out", 
-    image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/in-n-out.com", 
     pointsCost: 200, 
     value: "$10",
     description: "In-N-Out Burger maintains high quality standards and sources fresh ingredients. While known for their classic burgers, they focus on quality and freshness in all their offerings."
@@ -97,7 +98,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "9", 
     brand: "Amazon", 
-    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/amazon.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Amazon offers a wide range of products and services. Use your gift card to purchase eco-friendly products, books, electronics, and more from their extensive marketplace."
@@ -105,7 +106,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "10", 
     brand: "Adidas", 
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/adidas.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Adidas is committed to sustainability with initiatives like using recycled materials in their products, reducing plastic waste, and working towards carbon neutrality. Their sustainable product lines include shoes and apparel made from ocean plastic."
@@ -113,7 +114,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "11", 
     brand: "Starbucks", 
-    image: "https://images.unsplash.com/photo-1511920170033-83939cdc2e39?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/starbucks.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Starbucks is committed to sustainability through ethical sourcing, reducing waste, and environmental stewardship. They aim to be resource positive, giving more than they take from the planet."
@@ -121,7 +122,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "12", 
     brand: "Sephora", 
-    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/sephora.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Sephora offers a wide selection of beauty products including many eco-friendly and cruelty-free brands. Use your gift card to explore sustainable beauty options and clean beauty products."
@@ -129,7 +130,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "13", 
     brand: "AMC Theatres", 
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/amctheatres.com", 
     pointsCost: 200, 
     value: "$10",
     description: "AMC Theatres provides entertainment through movies and events. Use your gift card to enjoy the latest films and cinematic experiences at AMC locations nationwide."
@@ -137,7 +138,7 @@ const giftCards: GiftCard[] = [
   { 
     id: "14", 
     brand: "Apple", 
-    image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=300&fit=crop", 
+    image: "https://logo.clearbit.com/apple.com", 
     pointsCost: 200, 
     value: "$10",
     description: "Apple is committed to carbon neutrality and environmental responsibility. They use recycled materials in their products, run on renewable energy, and work towards a carbon-neutral supply chain by 2030."
@@ -145,7 +146,7 @@ const giftCards: GiftCard[] = [
 ];
 
 const MyPoints = () => {
-  const [userPoints, setUserPoints] = useState(250); // Mock user points
+  const { points: userPoints, subtractPoints } = usePoints();
   const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -169,7 +170,7 @@ const MyPoints = () => {
     if (!selectedCard) return;
 
     if (userPoints >= selectedCard.pointsCost) {
-      setUserPoints(userPoints - selectedCard.pointsCost);
+      subtractPoints(selectedCard.pointsCost);
       toast({
         title: "Gift card redeemed!",
         description: `Your ${selectedCard.brand} gift card will be sent to ${email}`,
@@ -226,11 +227,15 @@ const MyPoints = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {giftCards.map((card) => (
               <Card key={card.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col">
-                <div className="aspect-video overflow-hidden bg-muted">
+                <div className="aspect-video overflow-hidden bg-muted flex items-center justify-center p-4">
                   <img
                     src={card.image}
                     alt={`${card.brand} gift card`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      // Fallback to a placeholder if logo fails to load
+                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop";
+                    }}
                   />
                 </div>
                 <CardHeader>
