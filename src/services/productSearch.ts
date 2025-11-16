@@ -422,7 +422,6 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
     "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=400&h=400&fit=crop",
     "https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?w=400&h=400&fit=crop",
   ];
-  
   const brands = Object.values(ECO_BRANDS);
   
   for (let i = 0; i < 10; i++) {
