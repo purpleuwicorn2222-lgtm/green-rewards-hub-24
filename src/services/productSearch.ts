@@ -446,6 +446,7 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
 /**
  * Enhanced search query builder for eco-friendly, certified products
  * Targets product pages specifically, not homepages or category pages
+ * Optimized for shopping results with accurate product data
  */
 const buildEcoSearchQuery = (query: string): string => {
   const baseQuery = query.toLowerCase().trim();
@@ -470,16 +471,19 @@ const buildEcoSearchQuery = (query: string): string => {
     'inurl:"/item/"',
     'inurl:"/products/"',
     'inurl:"/shop/"',
+    'inurl:"/buy/"',
   ];
   
   // Build query targeting product pages with eco-friendly terms
-  const enhancedQuery = `${ecoTerms.slice(0, 3).join(" OR ")} ${baseQuery} (${productPagePatterns.slice(0, 2).join(" OR ")})`;
+  // Use shopping-focused terms for better product results
+  const enhancedQuery = `"${baseQuery}" (${ecoTerms.slice(0, 3).join(" OR ")}) (${productPagePatterns.slice(0, 3).join(" OR ")}) buy shop purchase`;
   
   return enhancedQuery;
 };
 
 /**
  * Validate if URL is a product page (not homepage or category page)
+ * Enhanced to ensure URLs are current and valid product pages
  */
 const isProductPage = (url: string): boolean => {
   if (!url || url === "#") return false;
@@ -500,6 +504,8 @@ const isProductPage = (url: string): boolean => {
       "/shop/",
       "/buy/",
       "/detail/",
+      "/dp/",        // Amazon product pages
+      "/gp/product/", // Amazon product pages
     ];
     
     // Check for category/listing page indicators (exclude these)
@@ -511,6 +517,8 @@ const isProductPage = (url: string): boolean => {
       "/search",
       "/browse",
       "/all",
+      "/list/",
+      "/grid/",
     ];
     
     // Must have product indicator and not be a category page
@@ -518,34 +526,98 @@ const isProductPage = (url: string): boolean => {
     const isCategoryPage = categoryIndicators.some(indicator => path.includes(indicator));
     
     // Also check if URL has product-like structure (has ID or slug)
-    const hasProductStructure = /\/[^\/]+\/[^\/]+/.test(path) && path.split("/").length >= 3;
+    // Product URLs typically have at least 2 path segments after domain
+    const hasProductStructure = /\/[^\/]+\/[^\/]+/.test(path) && path.split("/").filter(p => p).length >= 2;
     
-    return (hasProductIndicator || hasProductStructure) && !isCategoryPage;
+    // Exclude common non-product paths
+    const excludedPaths = ["/cart", "/checkout", "/account", "/login", "/register", "/about", "/contact"];
+    const isExcluded = excludedPaths.some(excluded => path.startsWith(excluded));
+    
+    return (hasProductIndicator || hasProductStructure) && !isCategoryPage && !isExcluded;
   } catch {
     return false;
   }
 };
 
 /**
- * Extract the best product image from Google search result
+ * Validate and clean product URL to ensure it's current and accurate
  */
-const extractProductImage = (item: any): string => {
-  // Priority order for image extraction
+const validateProductUrl = (url: string): string => {
+  if (!url || url === "#") return "";
+  
+  try {
+    const urlObj = new URL(url);
+    
+    // Remove common tracking parameters that might make URLs stale
+    const trackingParams = [
+      "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+      "ref", "source", "affiliate_id", "campaign_id", "gclid", "fbclid",
+      "mc_cid", "mc_eid", "_ga", "gclsrc"
+    ];
+    
+    trackingParams.forEach(param => {
+      urlObj.searchParams.delete(param);
+    });
+    
+    // Ensure HTTPS for security
+    if (urlObj.protocol === "http:") {
+      urlObj.protocol = "https:";
+    }
+    
+    return urlObj.toString();
+  } catch {
+    return url; // Return original if parsing fails
+  }
+};
+
+/**
+ * Extract the best product image from Google search result
+ * Prioritizes actual product images over logos or banners
+ */
+const extractProductImage = (item: any, url: string = ""): string => {
+  // Priority order for image extraction (most accurate first)
   const imageSources = [
-    item.pagemap?.cse_image?.[0]?.src,
-    item.pagemap?.metatags?.[0]?.["og:image"],
-    item.pagemap?.cse_thumbnail?.[0]?.src,
-    item.pagemap?.metatags?.[0]?.["twitter:image"],
+    // Structured product data (most accurate)
     item.pagemap?.product?.[0]?.image,
+    item.pagemap?.product?.[0]?.image_url,
+    // Open Graph images (usually product images)
+    item.pagemap?.metatags?.[0]?.["og:image"],
+    item.pagemap?.metatags?.[0]?.["og:image:secure_url"],
+    // Google extracted images
+    item.pagemap?.cse_image?.[0]?.src,
+    // Twitter card images
+    item.pagemap?.metatags?.[0]?.["twitter:image"],
+    item.pagemap?.metatags?.[0]?.["twitter:image:src"],
+    // Thumbnails (fallback)
+    item.pagemap?.cse_thumbnail?.[0]?.src,
   ];
   
   for (const image of imageSources) {
-    if (image && typeof image === "string" && image.startsWith("http")) {
-      // Ensure it's a full URL, not relative
-      if (image.startsWith("//")) {
-        return `https:${image}`;
+    if (image && typeof image === "string") {
+      let imageUrl = image.trim();
+      
+      // Skip if it's clearly not a product image
+      if (imageUrl.includes("logo") || imageUrl.includes("banner") || imageUrl.includes("icon")) {
+        continue;
       }
-      return image;
+      
+      // Ensure it's a full URL
+      if (imageUrl.startsWith("//")) {
+        imageUrl = `https:${imageUrl}`;
+      } else if (imageUrl.startsWith("/")) {
+        // Relative URL - construct from product URL
+        try {
+          const baseUrl = new URL(url);
+          imageUrl = `${baseUrl.origin}${imageUrl}`;
+        } catch {
+          continue; // Skip if we can't construct URL
+        }
+      }
+      
+      // Validate it's a proper image URL
+      if (imageUrl.startsWith("http") && (imageUrl.match(/\.(jpg|jpeg|png|gif|webp)/i) || imageUrl.includes("image"))) {
+        return imageUrl;
+      }
     }
   }
   
@@ -554,40 +626,79 @@ const extractProductImage = (item: any): string => {
 
 /**
  * Extract price from various sources in Google search result
+ * Enhanced to find the most accurate product price
  */
 const extractPrice = (item: any): number => {
-  // Try multiple price extraction methods
+  // Try structured data first (most accurate)
+  const structuredPrice = 
+    item.pagemap?.product?.[0]?.price ||
+    item.pagemap?.product?.[0]?.priceCurrency ||
+    item.pagemap?.metatags?.[0]?.["product:price:amount"] ||
+    item.pagemap?.metatags?.[0]?.["product:price:currency"];
+  
+  if (structuredPrice) {
+    const price = parseFloat(String(structuredPrice).replace(/[^0-9.]/g, ""));
+    if (price > 0 && price < 100000) {
+      return Math.round(price * 100) / 100; // Round to 2 decimals
+    }
+  }
+  
+  // Try multiple price extraction patterns from text
   const pricePatterns = [
-    /\$(\d+\.?\d*)/g,
-    /USD\s*\$?(\d+\.?\d*)/gi,
-    /price[:\s]*\$?(\d+\.?\d*)/gi,
-    /(\d+\.?\d*)\s*USD/gi,
+    /\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/g,  // $1,234.56
+    /\$\s*(\d+\.?\d{0,2})/g,                     // $12.99
+    /USD\s*\$?\s*(\d+\.?\d*)/gi,
+    /price[:\s]*\$?\s*(\d+\.?\d*)/gi,
+    /(\d+\.?\d{2})\s*USD/gi,
+    /(\d+\.?\d{2})\s*\$/,                        // 12.99 $
+    /cost[:\s]*\$?\s*(\d+\.?\d*)/gi,
   ];
   
   const textSources = [
     item.snippet,
     item.htmlSnippet,
-    item.pagemap?.metatags?.[0]?.["product:price:amount"],
-    item.pagemap?.product?.[0]?.price,
+    item.title,
   ].filter(Boolean);
+  
+  const prices: number[] = [];
   
   for (const text of textSources) {
     if (!text) continue;
     
     for (const pattern of pricePatterns) {
-      const matches = text.match(pattern);
-      if (matches && matches.length > 0) {
-        // Extract the first price found
-        const priceMatch = matches[0].match(/(\d+\.?\d*)/);
-        if (priceMatch) {
-          const price = parseFloat(priceMatch[1]);
+      const matches = Array.from(text.matchAll(pattern));
+      for (const match of matches) {
+        if (match[1]) {
+          const priceStr = match[1].replace(/,/g, ""); // Remove commas
+          const price = parseFloat(priceStr);
           // Sanity check: reasonable price range
           if (price > 0 && price < 100000) {
-            return price;
+            prices.push(price);
           }
         }
       }
     }
+  }
+  
+  // Return the most common price or the first valid price
+  if (prices.length > 0) {
+    // Find most common price (within $1 range)
+    const priceGroups = new Map<number, number>();
+    for (const price of prices) {
+      const rounded = Math.round(price);
+      priceGroups.set(rounded, (priceGroups.get(rounded) || 0) + 1);
+    }
+    
+    let maxCount = 0;
+    let bestPrice = prices[0];
+    for (const [price, count] of priceGroups.entries()) {
+      if (count > maxCount) {
+        maxCount = count;
+        bestPrice = price;
+      }
+    }
+    
+    return Math.round(bestPrice * 100) / 100;
   }
   
   return 0;
@@ -604,7 +715,9 @@ const searchWithGoogle = async (query: string): Promise<SearchProduct[]> => {
 
   // Build enhanced search query targeting eco-friendly, certified products
   const searchQuery = buildEcoSearchQuery(query);
-  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(searchQuery)}&num=10&safe=active`;
+  // Use additional parameters for better shopping results
+  // Note: searchType=image removed - we want web results with product pages, not just images
+  const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CSE_ID}&q=${encodeURIComponent(searchQuery)}&num=10&safe=active&lr=lang_en&cr=countryUS`;
 
   try {
     const response = await fetch(url);
@@ -634,9 +747,9 @@ const searchWithGoogle = async (query: string): Promise<SearchProduct[]> => {
         }
         
         // Extract product image (prioritize product-specific images)
-        const image = extractProductImage(item);
+        const image = extractProductImage(item, url);
         
-        // Extract price
+        // Extract price (enhanced extraction)
         const price = extractPrice(item);
         
         // Extract certifications from snippet and title
@@ -670,13 +783,16 @@ const searchWithGoogle = async (query: string): Promise<SearchProduct[]> => {
           description = `Eco-friendly ${query}. ${description}`;
         }
 
+        // Validate and clean the URL
+        const validatedUrl = validateProductUrl(url);
+        
         return {
-          id: `google-${url.replace(/[^a-zA-Z0-9]/g, "") || index}`,
+          id: `google-${validatedUrl.replace(/[^a-zA-Z0-9]/g, "") || index}`,
           name: item.title || `Eco-Friendly ${query}`,
           image: image,
           price: price,
           description: description.trim(),
-          sourceUrl: url,
+          sourceUrl: validatedUrl,
           sourceName: hostname,
           certifications: certifications.length > 0 ? certifications as any : undefined,
         };

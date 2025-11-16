@@ -217,7 +217,7 @@ const SearchResults = () => {
                               className="w-full"
                             >
                               <ShoppingCart className="mr-2 h-4 w-4" />
-                              Add to Cart
+                              Add to Shopping List
                             </Button>
                             
                             <Button
