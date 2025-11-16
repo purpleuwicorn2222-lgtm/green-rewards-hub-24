@@ -283,7 +283,56 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
 };
 
 
-const buildEcoSearchQuery = (q: string) => q;
+// In src/services/productSearch.ts
+
+const buildEcoSearchQuery = (query: string): string => {
+  const baseQuery = query.toLowerCase().trim();
+  
+  // More specific terms to find product pages
+  const ecoTerms = [
+    "eco-friendly",
+    "sustainable",
+    "organic",
+    "recycled",
+    "b corp",
+    "fair trade",
+  ];
+  
+  // 1. ADD NEGATIVE KEYWORDS
+  // This tells Google to REMOVE results from common "random" sites.
+  // This is the most effective change you can make in code.
+  const excludeSites = [
+    "-site:pinterest.com",
+    "-site:youtube.com",
+    "-site:amazon.com", // Add Amazon if you want to focus on brand sites
+    "-site:reddit.com",
+    "-site:ebay.com",
+    "-site:walmart.com",
+    "-inurl:blog", // Exclude pages that have "blog" in the URL
+    "-inurl:forum",
+    "-inurl:reviews",
+  ];
+
+  // 2. IMPROVE POSITIVE KEYWORDS
+  // Using quotes makes the search more specific.
+  const productPagePatterns = [
+    `"shop"`,
+    `"buy"`,
+    `"product"`,
+    `"add to cart"`,
+  ];
+
+  // 3. COMBINE EVERYTHING
+  const enhancedQuery = [
+    `"${baseQuery}"`, // Search for the exact user query
+    `(${ecoTerms.join(" OR ")})`, // Add our eco terms
+    `(${productPagePatterns.join(" OR ")})`, // Add our product terms
+    ...excludeSites // Add all our negative keywords
+  ].join(" ");
+  
+  return enhancedQuery;
+};
+
 const isProductPage = (url: string) => true;
 const validateProductUrl = (url: string) => url;
 
