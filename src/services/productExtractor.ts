@@ -1,25 +1,6 @@
 import { SearchProduct, CertificationType } from "@/types/product";
 
-/**
- * Product Extractor Service
- * 
- * This service extracts product information from retailer websites.
- * 
- * NOTE: Due to CORS restrictions, this requires a backend proxy service.
- * Options:
- * 1. Create a backend API endpoint that scrapes product pages
- * 2. Use a service like ScraperAPI (https://www.scraperapi.com/)
- * 3. Use a CORS proxy service
- * 
- * For production, implement a backend service that:
- * - Fetches the product page HTML
- * - Parses product data (name, image, price, description)
- * - Extracts certifications from page content
- * - Returns structured product data
- */
-
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
-const SCRAPER_API_KEY = import.meta.env.VITE_SCRAPER_API_KEY || "";
+const SCRAPEDO_API_KEY = import.meta.env.VITE_SCRAPEDO_API_KEY || "";
 
 /**
  * Extract certifications from text content
@@ -90,65 +71,33 @@ export const extractProductData = (html: string, url: string): Partial<SearchPro
   };
 };
 
-/**
- * Fetch and extract product data from a URL
- * Requires a backend proxy due to CORS restrictions
- */
 export const fetchProductData = async (url: string): Promise<Partial<SearchProduct>> => {
+  if (!SCRAPEDO_API_KEY) {
+    console.error("Scrape.do API key not configured");
+    return { sourceUrl: url, name: "API Key Missing", price: 0 };
+  }
   try {
-    let response: Response;
-
-    if (SCRAPER_API_KEY) {
-      // Use ScraperAPI if available
-      const scraperUrl = `https://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&url=${encodeURIComponent(url)}`;
-      response = await fetch(scraperUrl);
-    } else if (BACKEND_API_URL) {
-      // Use custom backend API
-      response = await fetch(`${BACKEND_API_URL}/api/extract-product`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-    } else {
-      // Try direct fetch (will fail due to CORS, but useful for same-origin)
-      response = await fetch(url, {
-        mode: "cors",
-        headers: {
-          "Accept": "text/html",
-        },
-      });
-    }
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch product page: ${response.statusText}`);
-    }
-
+    const scrapeDoUrl = `https://api.scrape.do?token=${SCRAPEDO_API_KEY}&url=${encodeURIComponent(url)}`;
+    const response = await fetch(scrapeDoUrl);
+    if (!response.ok) throw new Error(`Scrape.do failed: ${response.statusText}`);
     const html = await response.text();
     return extractProductData(html, url);
   } catch (error) {
     console.error("Error fetching product data:", error);
-    return {};
+    return { sourceUrl: url, name: "Scrape Failed", price: 0 };
   }
 };
 
-/**
- * Batch fetch product data from multiple URLs
- */
 export const fetchMultipleProductData = async (
   urls: string[]
 ): Promise<Array<Partial<SearchProduct>>> => {
   const results = await Promise.allSettled(
     urls.map(url => fetchProductData(url))
   );
-
   return results.map((result, index) => {
     if (result.status === "fulfilled") {
-      return {
-        ...result.value,
-        sourceUrl: urls[index],
-      };
+      return { ...result.value, sourceUrl: urls[index] };
     }
-    return { sourceUrl: urls[index] };
+    return { sourceUrl: urls[index], name: "Scrape Failed" };
   });
 };
-
