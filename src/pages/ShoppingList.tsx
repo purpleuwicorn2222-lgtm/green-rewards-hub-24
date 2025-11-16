@@ -146,26 +146,14 @@ const ShoppingList = () => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={clearCart}
-                      className="flex-1"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Clear Cart
-                    </Button>
-                    <Button
-                      variant="eco"
-                      className="flex-1"
-                      onClick={() => {
-                        // In a real app, this would navigate to checkout
-                        alert("Checkout functionality would be implemented here!");
-                      }}
-                    >
-                      Proceed to Checkout
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={clearCart}
+                    className="w-full"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear Cart
+                  </Button>
                 </CardContent>
               </Card>
             </>

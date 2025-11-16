@@ -70,6 +70,78 @@ const giftCards: GiftCard[] = [
     value: "$10",
     description: "Part of raising a healthy baby is providing a healthy environment, and don't you think taking care of the natural environment is part of that too? Green Toys is an Eco Mama's dream: not only are the toys safely made for your baby, but they are made with 100% recycled materials."
   },
+  { 
+    id: "6", 
+    brand: "Chipotle", 
+    image: "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Chipotle is committed to Food With Integrity, sourcing responsibly raised meat, organic and local produce when possible, and dairy from pasture-raised cows. They focus on sustainable farming practices and reducing their environmental impact."
+  },
+  { 
+    id: "7", 
+    brand: "Panda Express", 
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Panda Express is committed to serving quality food while being mindful of sustainability. They focus on responsible sourcing and reducing waste in their operations."
+  },
+  { 
+    id: "8", 
+    brand: "In-N-Out", 
+    image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "In-N-Out Burger maintains high quality standards and sources fresh ingredients. While known for their classic burgers, they focus on quality and freshness in all their offerings."
+  },
+  { 
+    id: "9", 
+    brand: "Amazon", 
+    image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Amazon offers a wide range of products and services. Use your gift card to purchase eco-friendly products, books, electronics, and more from their extensive marketplace."
+  },
+  { 
+    id: "10", 
+    brand: "Adidas", 
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Adidas is committed to sustainability with initiatives like using recycled materials in their products, reducing plastic waste, and working towards carbon neutrality. Their sustainable product lines include shoes and apparel made from ocean plastic."
+  },
+  { 
+    id: "11", 
+    brand: "Starbucks", 
+    image: "https://images.unsplash.com/photo-1511920170033-83939cdc2e39?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Starbucks is committed to sustainability through ethical sourcing, reducing waste, and environmental stewardship. They aim to be resource positive, giving more than they take from the planet."
+  },
+  { 
+    id: "12", 
+    brand: "Sephora", 
+    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Sephora offers a wide selection of beauty products including many eco-friendly and cruelty-free brands. Use your gift card to explore sustainable beauty options and clean beauty products."
+  },
+  { 
+    id: "13", 
+    brand: "AMC Theatres", 
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "AMC Theatres provides entertainment through movies and events. Use your gift card to enjoy the latest films and cinematic experiences at AMC locations nationwide."
+  },
+  { 
+    id: "14", 
+    brand: "Apple", 
+    image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=300&fit=crop", 
+    pointsCost: 200, 
+    value: "$10",
+    description: "Apple is committed to carbon neutrality and environmental responsibility. They use recycled materials in their products, run on renewable energy, and work towards a carbon-neutral supply chain by 2030."
+  },
 ];
 
 const MyPoints = () => {

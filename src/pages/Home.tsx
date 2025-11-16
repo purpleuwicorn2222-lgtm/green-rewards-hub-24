@@ -4,6 +4,11 @@ import SearchBar from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Leaf, Recycle, Award } from "lucide-react";
 import heroImage from "@/assets/hero-nature.jpg";
+import patagoniaLogo from "@/assets/brands/patagonia.jpg";
+import pelaLogo from "@/assets/brands/pela.jpg";
+import thinxLogo from "@/assets/brands/thinx.jpg";
+import whoGivesACrapLogo from "@/assets/brands/who-gives-a-crap.jpg";
+import greenToysLogo from "@/assets/brands/green-toys.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -90,6 +95,65 @@ const Home = () => {
                 <p className="text-muted-foreground text-center">
                   Use your earned points to get gift cards from your favorite brands.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Eco-Friendly Partners Section */}
+        <section className="py-16 bg-card border-t border-border">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+              Our Eco-Friendly Partners
+            </h2>
+            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+              We're proud to partner with these sustainable brands committed to environmental responsibility
+            </p>
+            
+            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 lg:gap-16">
+              {/* Patagonia */}
+              <div className="flex items-center justify-center">
+                <img
+                  src={patagoniaLogo}
+                  alt="Patagonia"
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              
+              {/* Pela */}
+              <div className="flex items-center justify-center">
+                <img
+                  src={pelaLogo}
+                  alt="Pela"
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              
+              {/* Thinx */}
+              <div className="flex items-center justify-center">
+                <img
+                  src={thinxLogo}
+                  alt="Thinx"
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              
+              {/* Who Gives A Crap */}
+              <div className="flex items-center justify-center">
+                <img
+                  src={whoGivesACrapLogo}
+                  alt="Who Gives A Crap"
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              
+              {/* Green Toys */}
+              <div className="flex items-center justify-center">
+                <img
+                  src={greenToysLogo}
+                  alt="Green Toys"
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                />
               </div>
             </div>
           </div>
