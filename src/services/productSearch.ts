@@ -445,6 +445,7 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
 
 /**
  * Enhanced search query builder for eco-friendly, certified products
+ * Targets product pages specifically, not homepages or category pages
  */
 const buildEcoSearchQuery = (query: string): string => {
   const baseQuery = query.toLowerCase().trim();
@@ -461,10 +462,135 @@ const buildEcoSearchQuery = (query: string): string => {
     "B Corp",
   ];
   
-  // Build query with eco terms and certifications
-  const enhancedQuery = `${ecoTerms.slice(0, 3).join(" OR ")} ${baseQuery} site:shop OR site:store OR site:product`;
+  // Target product pages specifically (not homepages)
+  // Common product page URL patterns: /product/, /p/, /item/, /products/, /shop/
+  const productPagePatterns = [
+    'inurl:"/product/"',
+    'inurl:"/p/"',
+    'inurl:"/item/"',
+    'inurl:"/products/"',
+    'inurl:"/shop/"',
+  ];
+  
+  // Build query targeting product pages with eco-friendly terms
+  const enhancedQuery = `${ecoTerms.slice(0, 3).join(" OR ")} ${baseQuery} (${productPagePatterns.slice(0, 2).join(" OR ")})`;
   
   return enhancedQuery;
+};
+
+/**
+ * Validate if URL is a product page (not homepage or category page)
+ */
+const isProductPage = (url: string): boolean => {
+  if (!url || url === "#") return false;
+  
+  try {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname.toLowerCase();
+    
+    // Check if it's a homepage
+    if (path === "/" || path === "") return false;
+    
+    // Check for product page indicators
+    const productIndicators = [
+      "/product/",
+      "/products/",
+      "/p/",
+      "/item/",
+      "/shop/",
+      "/buy/",
+      "/detail/",
+    ];
+    
+    // Check for category/listing page indicators (exclude these)
+    const categoryIndicators = [
+      "/category/",
+      "/categories/",
+      "/collection/",
+      "/collections/",
+      "/search",
+      "/browse",
+      "/all",
+    ];
+    
+    // Must have product indicator and not be a category page
+    const hasProductIndicator = productIndicators.some(indicator => path.includes(indicator));
+    const isCategoryPage = categoryIndicators.some(indicator => path.includes(indicator));
+    
+    // Also check if URL has product-like structure (has ID or slug)
+    const hasProductStructure = /\/[^\/]+\/[^\/]+/.test(path) && path.split("/").length >= 3;
+    
+    return (hasProductIndicator || hasProductStructure) && !isCategoryPage;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Extract the best product image from Google search result
+ */
+const extractProductImage = (item: any): string => {
+  // Priority order for image extraction
+  const imageSources = [
+    item.pagemap?.cse_image?.[0]?.src,
+    item.pagemap?.metatags?.[0]?.["og:image"],
+    item.pagemap?.cse_thumbnail?.[0]?.src,
+    item.pagemap?.metatags?.[0]?.["twitter:image"],
+    item.pagemap?.product?.[0]?.image,
+  ];
+  
+  for (const image of imageSources) {
+    if (image && typeof image === "string" && image.startsWith("http")) {
+      // Ensure it's a full URL, not relative
+      if (image.startsWith("//")) {
+        return `https:${image}`;
+      }
+      return image;
+    }
+  }
+  
+  return "";
+};
+
+/**
+ * Extract price from various sources in Google search result
+ */
+const extractPrice = (item: any): number => {
+  // Try multiple price extraction methods
+  const pricePatterns = [
+    /\$(\d+\.?\d*)/g,
+    /USD\s*\$?(\d+\.?\d*)/gi,
+    /price[:\s]*\$?(\d+\.?\d*)/gi,
+    /(\d+\.?\d*)\s*USD/gi,
+  ];
+  
+  const textSources = [
+    item.snippet,
+    item.htmlSnippet,
+    item.pagemap?.metatags?.[0]?.["product:price:amount"],
+    item.pagemap?.product?.[0]?.price,
+  ].filter(Boolean);
+  
+  for (const text of textSources) {
+    if (!text) continue;
+    
+    for (const pattern of pricePatterns) {
+      const matches = text.match(pattern);
+      if (matches && matches.length > 0) {
+        // Extract the first price found
+        const priceMatch = matches[0].match(/(\d+\.?\d*)/);
+        if (priceMatch) {
+          const price = parseFloat(priceMatch[1]);
+          // Sanity check: reasonable price range
+          if (price > 0 && price < 100000) {
+            return price;
+          }
+        }
+      }
+    }
+  }
+  
+  return 0;
 };
 
 /**
@@ -493,53 +619,94 @@ const searchWithGoogle = async (query: string): Promise<SearchProduct[]> => {
     }
 
     // Transform Google results into SearchProduct format
-    const products: SearchProduct[] = data.items.map((item: any, index: number) => {
-      const hostname = new URL(item.link || "https://example.com").hostname.replace("www.", "");
-      
-      // Extract image from various sources
-      const image = 
-        item.pagemap?.cse_image?.[0]?.src ||
-        item.pagemap?.metatags?.[0]?.["og:image"] ||
-        item.pagemap?.cse_thumbnail?.[0]?.src ||
-        "";
+    const products: SearchProduct[] = data.items
+      .filter((item: any) => {
+        // Filter to only include product pages, not homepages or category pages
+        return item.link && isProductPage(item.link);
+      })
+      .map((item: any, index: number) => {
+        const url = item.link || "#";
+        let hostname = "";
+        try {
+          hostname = new URL(url).hostname.replace("www.", "");
+        } catch {
+          hostname = "retailer";
+        }
+        
+        // Extract product image (prioritize product-specific images)
+        const image = extractProductImage(item);
+        
+        // Extract price
+        const price = extractPrice(item);
+        
+        // Extract certifications from snippet and title
+        const certifications: string[] = [];
+        const searchText = `${item.title || ""} ${item.snippet || ""}`.toLowerCase();
+        
+        if (searchText.includes("fair trade") || searchText.includes("fairtrade")) certifications.push("Fair Trade");
+        if (searchText.includes("gots") || searchText.includes("global organic textile")) certifications.push("GOTS");
+        if (searchText.includes("b corp") || searchText.includes("b-corp") || searchText.includes("bcorp")) certifications.push("B Corp");
+        if (searchText.includes("organic certified") || searchText.includes("certified organic") || searchText.includes("usda organic")) {
+          if (searchText.includes("usda")) {
+            certifications.push("USDA Organic");
+          } else {
+            certifications.push("Organic");
+          }
+        }
+        if (searchText.includes("recycled") && (searchText.includes("material") || searchText.includes("made from"))) certifications.push("Recycled");
+        if (searchText.includes("carbon neutral") || searchText.includes("carbon-neutral")) certifications.push("Carbon Neutral");
+        if (searchText.includes("fsc") || searchText.includes("forest stewardship")) certifications.push("FSC");
+        if (searchText.includes("cradle to cradle") || searchText.includes("c2c")) certifications.push("Cradle to Cradle");
+        if (searchText.includes("bluesign")) certifications.push("Bluesign");
+        if (searchText.includes("oeko-tex") || searchText.includes("oekotex")) certifications.push("OEKO-TEX");
+        if (searchText.includes("rainforest alliance")) certifications.push("Rainforest Alliance");
 
-      // Extract price if available in snippet or pagemap
-      let price = 0;
-      const priceMatch = item.snippet?.match(/\$(\d+\.?\d*)/) || 
-                        item.htmlSnippet?.match(/\$(\d+\.?\d*)/);
-      if (priceMatch) {
-        price = parseFloat(priceMatch[1]);
+        // Build enhanced description highlighting certifications
+        let description = item.snippet || item.title || "";
+        if (certifications.length > 0) {
+          description = `${description} This product is certified ${certifications.join(", ")}.`;
+        }
+        if (!description.includes("eco-friendly") && !description.includes("sustainable")) {
+          description = `Eco-friendly ${query}. ${description}`;
+        }
+
+        return {
+          id: `google-${url.replace(/[^a-zA-Z0-9]/g, "") || index}`,
+          name: item.title || `Eco-Friendly ${query}`,
+          image: image,
+          price: price,
+          description: description.trim(),
+          sourceUrl: url,
+          sourceName: hostname,
+          certifications: certifications.length > 0 ? certifications as any : undefined,
+        };
+      });
+
+    // Filter to ensure products match the search query and have valid data
+    const normalizedQuery = query.toLowerCase();
+    const filteredProducts = products.filter(product => {
+      // Must have valid URL
+      if (!product.sourceUrl || product.sourceUrl === "#" || !isProductPage(product.sourceUrl)) {
+        return false;
       }
-
-      // Extract certifications from snippet
-      const certifications: string[] = [];
-      const snippet = (item.snippet || "").toLowerCase();
-      if (snippet.includes("fair trade") || snippet.includes("fairtrade")) certifications.push("Fair Trade");
-      if (snippet.includes("gots")) certifications.push("GOTS");
-      if (snippet.includes("b corp") || snippet.includes("b-corp")) certifications.push("B Corp");
-      if (snippet.includes("organic certified") || snippet.includes("certified organic")) certifications.push("Organic");
-      if (snippet.includes("recycled")) certifications.push("Recycled");
-      if (snippet.includes("carbon neutral")) certifications.push("Carbon Neutral");
-      if (snippet.includes("fsc")) certifications.push("FSC");
-
-      return {
-        id: `google-${item.link?.replace(/[^a-zA-Z0-9]/g, "") || index}`,
-        name: item.title || `Eco-Friendly ${query}`,
-        image: image,
-        price: price,
-        description: item.snippet || `Eco-friendly ${query} product from a sustainable brand. Visit the product page for detailed information about certifications and sustainability features.`,
-        sourceUrl: item.link || "#",
-        sourceName: hostname,
-        certifications: certifications.length > 0 ? certifications as any : undefined,
-      };
+      
+      // Must have name
+      if (!product.name || product.name.length < 3) {
+        return false;
+      }
+      
+      // Must match search query
+      const productText = `${product.name} ${product.description}`.toLowerCase();
+      const queryTerms = normalizedQuery.split(" ").filter(term => term.length > 2);
+      const matchesQuery = queryTerms.length === 0 || 
+        queryTerms.some(term => productText.includes(term)) ||
+        productText.includes(normalizedQuery);
+      
+      return matchesQuery;
     });
 
-    // Filter to ensure products match the search query
-    const normalizedQuery = query.toLowerCase();
-    return products.filter(product => {
-      const productText = `${product.name} ${product.description}`.toLowerCase();
-      return productText.includes(normalizedQuery) || normalizedQuery.split(" ").some(term => productText.includes(term));
-    }).slice(0, 10);
+    // Return top 10 products
+    return filteredProducts.slice(0, 10);
 
   } catch (error) {
     console.error("Google Search API error:", error);

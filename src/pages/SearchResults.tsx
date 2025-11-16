@@ -124,15 +124,22 @@ const SearchResults = () => {
                         className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
                       >
                         <div className="aspect-square overflow-hidden bg-muted relative">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              // Fallback image if loading fails
-                              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop";
-                            }}
-                          />
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                              onError={(e) => {
+                                // Fallback to placeholder if product image fails to load
+                                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop";
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted">
+                              <Leaf className="h-12 w-12 text-muted-foreground/50" />
+                            </div>
+                          )}
                           <Badge
                             variant="secondary"
                             className="absolute top-2 right-2 bg-nature/90 text-white border-none"
@@ -216,10 +223,20 @@ const SearchResults = () => {
                             <Button
                               variant="outline"
                               className="w-full"
-                              onClick={() => window.open(product.sourceUrl, "_blank")}
+                              onClick={() => {
+                                // Validate URL before opening
+                                if (product.sourceUrl && product.sourceUrl !== "#" && product.sourceUrl.startsWith("http")) {
+                                  window.open(product.sourceUrl, "_blank", "noopener,noreferrer");
+                                } else {
+                                  console.error("Invalid product URL:", product.sourceUrl);
+                                }
+                              }}
+                              disabled={!product.sourceUrl || product.sourceUrl === "#" || !product.sourceUrl.startsWith("http")}
                             >
                               <ExternalLink className="mr-2 h-4 w-4" />
-                              Purchase on {product.sourceName || "Brand Site"}
+                              {product.sourceUrl && product.sourceUrl.startsWith("http") 
+                                ? `Purchase on ${product.sourceName || "Retailer Site"}`
+                                : "Link unavailable"}
                             </Button>
                           </div>
                         </CardContent>
