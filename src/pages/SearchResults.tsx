@@ -147,19 +147,61 @@ const SearchResults = () => {
                             {product.name}
                           </h3>
                           
-                          {product.sourceName && (
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {product.sourceName}
-                            </p>
-                          )}
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            {product.sourceName && (
+                              <Badge variant="outline" className="text-xs">
+                                {product.sourceName}
+                              </Badge>
+                            )}
+                            {product.certifications && product.certifications.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {product.certifications.slice(0, 2).map((cert) => (
+                                  <Badge
+                                    key={cert}
+                                    variant="secondary"
+                                    className="text-xs bg-nature/20 text-nature border-nature/30"
+                                  >
+                                    {cert}
+                                  </Badge>
+                                ))}
+                                {product.certifications.length > 2 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{product.certifications.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
                           
                           <p className="text-2xl font-bold text-primary mb-3">
                             {product.price > 0 ? `$${product.price.toFixed(2)}` : "Price on site"}
                           </p>
                           
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-1">
-                            {product.description}
-                          </p>
+                          <div className="bg-nature/5 border border-nature/20 rounded-md p-3 mb-4 flex-1">
+                            <p className="text-xs font-semibold text-nature mb-1 flex items-center gap-1">
+                              <Leaf className="h-3 w-3" />
+                              Why it's eco-friendly
+                            </p>
+                            <p className="text-sm text-muted-foreground line-clamp-4">
+                              {product.description}
+                            </p>
+                            {product.certifications && product.certifications.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-nature/20">
+                                <p className="text-xs font-semibold text-nature mb-1">Certifications:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {product.certifications.map((cert) => (
+                                    <Badge
+                                      key={cert}
+                                      variant="outline"
+                                      className="text-xs border-nature/30 text-nature"
+                                    >
+                                      {cert}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                           
                           <div className="space-y-2 mt-auto">
                             <Button
@@ -177,7 +219,7 @@ const SearchResults = () => {
                               onClick={() => window.open(product.sourceUrl, "_blank")}
                             >
                               <ExternalLink className="mr-2 h-4 w-4" />
-                              View Source
+                              Purchase on {product.sourceName || "Brand Site"}
                             </Button>
                           </div>
                         </CardContent>
