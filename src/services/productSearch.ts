@@ -1,10 +1,11 @@
+// PASTE THIS ENTIRE THING INTO src/services/productSearch.ts
+
 import { SearchProduct, CertificationType } from "@/types/product";
 // 1. IMPORT YOUR SCRAPER
 import { fetchMultipleProductData } from "./productExtractor";
+
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const GOOGLE_CSE_ID = import.meta.env.VITE_GOOGLE_CSE_ID;
-// NOTE: This file NO LONGER uses any external search APIs.
-// It relies on its own hard-coded product database.
 
 // Curated list of reputable eco-friendly brands
 const ECO_BRANDS = {
@@ -230,8 +231,6 @@ const findProductCategory = (query: string): string | null => {
 /**
  * Generate eco-friendly products based on search query
  */
-// In src/services/productSearch.ts
-
 const generateEcoProducts = (query: string): SearchProduct[] => {
   const category = findProductCategory(query);
   const products: SearchProduct[] = [];
@@ -249,18 +248,18 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
         id: `eco-${category}-${Date.now()}-${i}`,
         name: product.name,
         image: product.image,
-        price: product.price + (Math.random() * 5 - 2.5),
+        price: product.price + (Math.random() * 5 - 2.5), // Small price variation
         description: product.description,
-        sourceUrl: product.sourceUrl,
+        sourceUrl: product.sourceUrl, // <-- 3. USE THE REAL, WORKING URL
         sourceName: brand.name,
-        certifications: [], // <-- ADD THIS LINE
+        certifications: [], // <-- FIX: Added missing field
       });
     }
     
     return products;
   }
   
-  // Fallback: Generate generic eco-friendly products
+  // Fallback: Generate generic eco-friendly products (these will have broken links)
   const ecoImages = [
     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
   ];
@@ -274,9 +273,9 @@ const generateEcoProducts = (query: string): SearchProduct[] => {
       image: ecoImages[i % ecoImages.length],
       price: 25 + (i * 5) + Math.random() * 10,
       description: `Sustainable ${query} from ${brand.name}...`,
-      sourceUrl: `${brand.website}/search?q=${encodeURIComponent(query)}`,
+      sourceUrl: `${brand.website}/search?q=${encodeURIComponent(query)}`, // This is still a guess
       sourceName: brand.name,
-      certifications: [], // <-- ADD THIS LINE
+      certifications: [], // <-- FIX: Added missing field
     });
   }
   

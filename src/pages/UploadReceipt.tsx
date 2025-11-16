@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePoints } from "@/contexts/PointsContext";
 
 const UploadReceipt = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { addPoints } = usePoints();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,6 +39,8 @@ const UploadReceipt = () => {
       const isValid = Math.random() > 0.3; // 70% success rate for demo
       
       if (isValid) {
+        // Add 10 points for successful receipt upload
+        addPoints(10);
         toast({
           title: "Receipt uploaded successfully!",
           description: "You earned +10 points for your eco-friendly purchase!",
